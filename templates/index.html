@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapidSummarize</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="/static/textsummarizer2.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Headland+One&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>RapidSummarize</h1>
+        <p>Upload multiple PDFs to summarize them into a single text file.</p>
+
+        <form id="uploadForm">
+            <small style="display:block; margin-top: 5px; color: white; font-family: 'Playwrite IN', cursive;">Please select PDF files only. You can select multiple files.</small>
+            
+            <!-- File Upload -->
+            <label for="pdfFiles" class="custom-file-upload">Choose Files</label>
+            <input type="file" id="pdfFiles" name="files" multiple accept="application/pdf">
+
+            <button type="submit" id="submitButton">Summarize</button>
+        </form>
+
+        <div id="loader" class="hidden">Processing...</div>
+
+        <div id="resultContainer" class="hidden">
+            <h2>Summary</h2>
+            <textarea id="summaryText" readonly></textarea>
+            <button id="downloadButton">Download Summary</button>
+        </div>
+    </div>
+    <script src="/static/scripts.js"></script>
+</body>
+</html>

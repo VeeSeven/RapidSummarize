@@ -1,0 +1,6 @@
+These are the required libraries needed for the usage of this application:
+
+flask
+pypdf2
+ollama
+requests
