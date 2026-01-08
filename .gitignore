@@ -1,0 +1,18 @@
+# Python Environment
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# App Specific Data (CRITICAL: Don't upload your user's PDFs or DB)
+backend/uploads/
+backend/chroma_storage/
+
+# OS/IDE files
+.vscode/
+.DS_Store
+.env
+
+# Model weights (if any are stored locally outside Ollama)
+*.bin
+*.gguf
