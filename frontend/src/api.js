@@ -1,13 +1,11 @@
 import axios from "axios";
 
-const apiClient = axios.create({
-  baseURL: "http://localhost:8000",
-});
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export const api = {
-  getFiles: () => apiClient.get("/files"),
-  
-  uploadFiles: (formData) => apiClient.post("/upload", formData, {
+  getFiles: () => axios.get(`${API_BASE}/files`),
+
+  uploadFiles: (formData) => axios.post(`${API_BASE}/upload`, formData, {
     headers: { "Content-Type": "multipart/form-data" }
   }),
 

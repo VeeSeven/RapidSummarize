@@ -4,7 +4,7 @@ venv/
 __pycache__/
 *.py[cod]
 
-# App Specific Data (CRITICAL: Don't upload your user's PDFs or DB)
+# App Specific Data 
 backend/uploads/
 backend/chroma_storage/
 
@@ -13,6 +13,6 @@ backend/chroma_storage/
 .DS_Store
 .env
 
-# Model weights (if any are stored locally outside Ollama)
+# Model weights 
 *.bin
 *.gguf
