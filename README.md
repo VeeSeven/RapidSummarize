@@ -201,4 +201,4 @@ npm run dev
 
 ---
 
-**Happy Summarizing! **
+**Happy Summarizing!**
