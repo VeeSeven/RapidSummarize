@@ -1,45 +1,204 @@
 # RapidSummarize 📄⚡
 
-**RapidSummarize** is a powerful RAG (Retrieval-Augmented Generation) application that lets you upload multiple PDFs, ask questions, and get intelligent, context‑aware answers. It combines a modern React frontend with a FastAPI backend, uses **Ollama** for LLM inference (Llama 3.2 and Nomic‑embed‑text), and **ChromaDB** for vector storage. All components are fully containerized with Docker for seamless deployment.
+**RapidSummarize** is a smart **Retrieval-Augmented Generation (RAG)** application that lets you upload PDFs and ask questions about them.  
+It combines a **React** frontend with a **FastAPI** backend, uses **Ollama** (Llama 3.2 + embeddings) for AI, and **ChromaDB** for vector storage.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="Version">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-  <img src="https://img.shields.io/badge/docker-ready-brightgreen" alt="Docker Ready">
-  <img src="https://img.shields.io/badge/PRs-welcome-orange" alt="PRs Welcome">
-</p>
-
----
-
-## 📸 Screenshots
-
-> *Add screenshots of your application here (upload page, chat interface).*
+Everything runs locally in **Docker** — just spin it up and start chatting with your documents.
 
 ---
 
 ## ✨ Features
 
-- 📁 **Multi‑PDF upload** – drag & drop or select multiple PDFs.
-- 🔍 **Smart chunking** – extracts text, falls back to OCR for scanned pages.
-- 🧠 **Contextual chat** – remembers previous exchanges for coherent conversations.
-- ⚡ **Streaming responses** – see answers appear in real time.
-- 🗂️ **File management** – view, select, and delete uploaded PDFs.
-- 🐳 **Dockerized** – easy setup with `docker-compose`.
-- 🔐 **Persistent storage** – uploads, vector DB, and models live in Docker volumes.
+- 📁 Upload multiple PDFs at once  
+- 🔍 Intelligent text extraction (OCR for scanned pages)  
+- 🧠 Context-aware conversations (remembers previous messages)  
+- ⚡ Real-time streaming responses  
+- 🗂️ File management: select, delete, clear context  
+- 🐳 Fully containerized with Docker Compose  
+- 🔐 Persistent storage for uploads, vector DB, and AI models  
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Built With
 
-| Layer       | Technology                                                                 |
-|-------------|----------------------------------------------------------------------------|
-| Frontend    | React + Vite, Tailwind CSS (via CDN), hosted on Nginx                      |
-| Backend     | FastAPI, Uvicorn, PyMuPDF, pytesseract, chromadb, ollama Python client     |
-| ML / AI     | Ollama (Llama 3.2, nomic‑embed‑text)                                       |
-| Vector DB   | ChromaDB (persistent)                                                      |
-| OCR         | Tesseract (integrated via pytesseract)                                     |
-| Container   | Docker, Docker Compose                                                     |
+### Frontend
+- React + Vite  
+- Served via Nginx  
+
+### Backend
+- FastAPI  
+- PyMuPDF  
+- pytesseract  
+- ChromaDB  
+- Ollama Python client  
+
+### AI & Storage
+- **LLM:** Llama 3.2 (via Ollama)  
+- **Embeddings:** nomic-embed-text  
+- **Vector DB:** ChromaDB (persistent)  
+
+### Containerization
+- Docker  
+- Docker Compose  
 
 ---
 
-## 🏗️ Architecture
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker & Docker Compose installed  
+- **8+ GB RAM recommended**
+
+---
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/VeeSeven/RapidSummarize.git
+cd rapidsummarize
+````
+
+---
+
+### 2️⃣ Start the application
+
+```bash
+docker-compose up -d
+```
+
+This will:
+
+* Build all images
+* Pull and start Ollama
+* Launch frontend & backend containers
+
+⚠️ **First run note:**
+Required models are downloaded automatically and may take **10–30 minutes** depending on your internet speed.
+
+---
+
+### 3️⃣ Open the app
+
+```
+http://localhost
+```
+
+---
+
+### 4️⃣ Stop the app
+
+```bash
+docker-compose down
+```
+
+---
+
+## 🔧 Manual Model Pull (Optional)
+
+If models fail to download automatically:
+
+```bash
+docker exec -it ollama ollama pull llama3.2
+docker exec -it ollama ollama pull nomic-embed-text
+```
+
+---
+
+## 📖 How to Use
+
+1. **Upload PDFs**
+
+   * Select one or more PDFs on the home page
+   * Optionally enter an initial question
+
+2. **Chat with your documents**
+
+   * You’ll be redirected to the chat page
+   * Choose which PDFs to query via the sidebar
+
+3. **Ask questions**
+
+   * Type a question and press **Enter**
+   * Answers are streamed in real time
+   * Responses are based **only** on selected PDFs
+
+4. **Manage files & context**
+
+   * Delete PDFs
+   * Clear chat history
+   * Switch document context anytime
+
+---
+
+## 🔌 API Overview
+
+| Method | Endpoint             | Description                       |
+| ------ | -------------------- | --------------------------------- |
+| POST   | `/upload`            | Upload PDFs (multipart/form-data) |
+| GET    | `/files`             | List all uploaded PDFs            |
+| DELETE | `/files/{filename}`  | Delete a PDF and its vectors      |
+| POST   | `/chat`              | Query selected PDFs               |
+| POST   | `/chat-with-context` | Query with previous chat context  |
+
+All responses are returned as **JSON** or **streaming text**.
+
+---
+
+## ⚙️ Configuration
+
+Set the following in `docker-compose.yml`:
+
+| Variable          | Default               | Description                    |
+| ----------------- | --------------------- | ------------------------------ |
+| `ALLOWED_ORIGINS` | `http://localhost`    | CORS origins (comma-separated) |
+| `OLLAMA_HOST`     | `http://ollama:11434` | Internal Ollama service URL    |
+
+### Frontend API
+
+* Set at build time using `VITE_API_URL`
+* Default: `http://localhost:8000`
+
+---
+
+## 💾 Persistent Volumes
+
+| Volume         | Purpose               |
+| -------------- | --------------------- |
+| `ollama_data`  | AI models             |
+| `uploads_data` | Uploaded PDFs         |
+| `chroma_data`  | ChromaDB vector index |
+
+---
+
+## 🧪 Development (Without Docker)
+
+### Backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+⚠️ Make sure **Ollama** is installed locally and running with the required models.
+
+---
+
+## 🙏 Thanks
+
+* Ollama — for making local LLMs easy
+* ChromaDB — for the vector database
+* FastAPI — for the backend framework
+* React & Vite — for frontend tooling
+
+---
+
+**Happy Summarizing! **
