@@ -192,7 +192,7 @@ npm run dev
 
 ---
 
-## 🙏 Thanks
+## Thanks
 
 * Ollama — for making local LLMs easy
 * ChromaDB — for the vector database
