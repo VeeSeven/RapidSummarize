@@ -33,13 +33,17 @@ async def upload_pdfs(background_tasks: BackgroundTasks, files: List[UploadFile]
         file_path = os.path.join(UPLOAD_DIR, file.filename)
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+            buffer.flush()
+            os.fsync(buffer.fileno())
         
         def process_pipeline(path):
+            print(f"Background task started for {path}")
             try:
                 chunks = extract_and_chunk_pdf(path)
                 add_to_vector_db(chunks)
+                print(f"Background task finished for {path}")
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"Error in background task: {e}")
 
         background_tasks.add_task(process_pipeline, file_path)
         uploaded_names.append(file.filename)
@@ -64,7 +68,7 @@ async def delete_file(filename: str):
 async def chat(
     query: str = Body(...), 
     selected_files: List[str] = Body(default=[]), 
-    n_results: int = Body(default=5)
+    n_results: int = Body(default=10)          
 ):
     try:
         def generate():
@@ -93,7 +97,7 @@ async def chat_with_context(
             contextualized_query = query
         
         def generate():
-            for chunk in chat_with_pdf(contextualized_query, selected_files, 5):
+            for chunk in chat_with_pdf(contextualized_query, selected_files, 10):   # 👈 increased
                 yield chunk
         
         return StreamingResponse(generate(), media_type="text/plain")

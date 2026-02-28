@@ -3,8 +3,9 @@ import pytesseract
 from PIL import Image
 import io
 import os
+import traceback
 
-def split_text_recursive(text, max_length=800, overlap=100):
+def split_text_recursive(text, max_length=1500, overlap=200):   
     chunks = []
     start = 0
     while start < len(text):
@@ -16,8 +17,12 @@ def split_text_recursive(text, max_length=800, overlap=100):
 
 def extract_and_chunk_pdf(file_path: str):
     print(f"Processing PDF: {file_path}")
-    
+    doc = None
     try:
+        if not os.path.exists(file_path):
+            print(f"File not found: {file_path}")
+            return []
+            
         doc = fitz.open(file_path)
         all_chunks = []
         total_text = 0
@@ -30,7 +35,7 @@ def extract_and_chunk_pdf(file_path: str):
             
             if len(meaningful_text) < 100:
                 print(f"Page {page_num+1}: Using OCR")
-                pix = page.get_pixmap(dpi=300)
+                pix = page.get_pixmap(dpi=200)
                 img = Image.open(io.BytesIO(pix.tobytes("png")))
                 text = pytesseract.image_to_string(img)
                 ocr_pages += 1
@@ -51,10 +56,13 @@ def extract_and_chunk_pdf(file_path: str):
                             }
                         })
         
-        doc.close()
         print(f"Total: {len(doc)} pages, {ocr_pages} OCR'd, {len(all_chunks)} chunks")
         return all_chunks
         
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
+        traceback.print_exc()
         return []
+    finally:
+        if doc:
+            doc.close()

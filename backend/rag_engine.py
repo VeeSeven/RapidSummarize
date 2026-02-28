@@ -1,9 +1,14 @@
 import ollama
 import chromadb
 from typing import List
+import time
+from datetime import datetime
 
 client = chromadb.PersistentClient(path="./chroma_storage")
 collection = client.get_or_create_collection(name="pdf_knowledge_base")
+
+def log(msg):
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
 def delete_from_vector_db(filename: str):
     collection.delete(where={"file_name": filename})
@@ -68,13 +73,13 @@ Instructions:
                 yield content
         
     except Exception as e:
-        print(f"Error in chat_with_pdf: {e}")
+        log(f"Error in chat_with_pdf: {e}")
         yield f"Error: {str(e)}"
 
 def add_to_vector_db(chunks):
     try:
         if not chunks:
-            print("No chunks to add to vector DB")
+            log("No chunks to add to vector DB")
             return
             
         documents = []
@@ -82,11 +87,12 @@ def add_to_vector_db(chunks):
         metadatas = []
         ids = []
         
-        print(f"Adding {len(chunks)} chunks to vector DB...")
+        log(f"Adding {len(chunks)} chunks to vector DB...")
         
         for idx, chunk in enumerate(chunks):
             content = chunk["content"].strip()
             if not content or len(content) < 10:
+                log(f"Skipping chunk {idx}: too short")
                 continue
                 
             documents.append(content)
@@ -99,20 +105,25 @@ def add_to_vector_db(chunks):
                     prompt=content[:1000]
                 )["embedding"]
                 embeddings.append(emb)
+                if idx % 10 == 0:
+                    log(f"Processed {idx+1}/{len(chunks)} chunks")
+                
+                time.sleep(0.05)
             except Exception as e:
-                print(f"Failed to get embedding for chunk {idx}: {e}")
+                log(f"Failed to get embedding for chunk {idx}: {e}")
                 continue
         
         if documents:
+            log(f"Adding {len(documents)} documents to ChromaDB...")
             collection.add(
                 documents=documents,
                 embeddings=embeddings,
                 metadatas=metadatas,
                 ids=ids
             )
-            print(f"Successfully added {len(documents)} chunks to vector DB")
+            log(f"Successfully added {len(documents)} chunks to vector DB")
         else:
-            print("No valid documents to add to vector DB")
+            log("No valid documents to add to vector DB")
             
     except Exception as e:
-        print(f"Error adding to vector DB: {e}")
+        log(f"Error adding to vector DB: {e}")
