@@ -7,6 +7,8 @@ Everything runs locally in **Docker** — just spin it up and start chatting wit
 
 ---
 
+![rapid - gif](https://github.com/user-attachments/assets/c392b5ff-167a-4c01-8874-a447aca92f8a)
+
 ## ✨ Features
 
 - 📁 Upload multiple PDFs at once  
