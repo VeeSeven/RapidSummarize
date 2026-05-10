@@ -1,11 +1,13 @@
-import ollama
+import boto3
+import json
 import chromadb
 from typing import List
-import time
 from datetime import datetime
 
 client = chromadb.PersistentClient(path="./chroma_storage")
 collection = client.get_or_create_collection(name="pdf_knowledge_base")
+
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
@@ -15,10 +17,10 @@ def delete_from_vector_db(filename: str):
 
 def chat_with_pdf(query: str, selected_files: List[str] = None, n_results: int = 5):
     try:
-        query_emb = ollama.embeddings(
-            model="nomic-embed-text", 
-            prompt=query
-        )["embedding"]
+        query_emb = json.loads(bedrock.invoke_model(
+            modelId="amazon.titan-embed-text-v2:0",
+            body=json.dumps({"inputText": query})
+        )["body"].read())["embedding"]
         
         search_params = {
             "query_embeddings": [query_emb],
@@ -57,20 +59,21 @@ Instructions:
 3. Be concise and direct.
 4. Cite the source file and page when possible."""
         
-        response = ollama.chat(
-            model="llama3.2",
+        response = bedrock.converse_stream(
+            modelId="us.meta.llama4-scout-17b-instruct-v1:0",
+            system=[{"text": system_prompt}],
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query}
+                {"role": "user", "content": [{"text": query}]}
             ],
-            stream=True,
-            options={"temperature": 0.1, "num_predict": 512}
+            inferenceConfig={
+                "temperature": 0.1,
+                "maxTokens": 512
+            }
         )
-        
-        for chunk in response:
-            content = chunk['message']['content']
-            if content:
-                yield content
+
+        for event in response["stream"]:
+            if "contentBlockDelta" in event:
+                yield event["contentBlockDelta"]["delta"]["text"]
         
     except Exception as e:
         log(f"Error in chat_with_pdf: {e}")
@@ -100,15 +103,13 @@ def add_to_vector_db(chunks):
             ids.append(f"{chunk['metadata']['file_name']}_page{chunk['metadata']['page_label']}_chunk{idx}")
             
             try:
-                emb = ollama.embeddings(
-                    model="nomic-embed-text", 
-                    prompt=content[:1000]
-                )["embedding"]
+                emb = json.loads(bedrock.invoke_model(
+                    modelId="amazon.titan-embed-text-v2:0",
+                    body=json.dumps({"inputText": content[:8000]})
+                )["body"].read())["embedding"]
                 embeddings.append(emb)
                 if idx % 10 == 0:
                     log(f"Processed {idx+1}/{len(chunks)} chunks")
-                
-                time.sleep(0.05)
             except Exception as e:
                 log(f"Failed to get embedding for chunk {idx}: {e}")
                 continue
