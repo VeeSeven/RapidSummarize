@@ -1,12 +1,18 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Body, HTTPException
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Body, HTTPException, Request
 from fastapi.responses import StreamingResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware 
-import shutil
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import boto3
 from typing import List, Optional
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 origins = [origin.strip() for origin in origins_str.split(",") if origin.strip()]
@@ -29,7 +35,8 @@ from processor import extract_and_chunk_pdf
 from rag_engine import add_to_vector_db, chat_with_pdf, delete_from_vector_db
 
 @app.post("/upload")
-async def upload_pdfs(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...)):
+@limiter.limit("5/minute")
+async def upload_pdfs(request: Request, background_tasks: BackgroundTasks, files: List[UploadFile] = File(...)):
     uploaded_names = []
     for file in files:
         if not file.filename.lower().endswith(".pdf"):
@@ -77,7 +84,9 @@ async def delete_file(filename: str):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/chat")
+@limiter.limit("10/minute")
 async def chat(
+    request: Request,
     query: str = Body(...), 
     selected_files: List[str] = Body(default=[]), 
     n_results: int = Body(default=10)          
@@ -92,7 +101,9 @@ async def chat(
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/chat-with-context")
+@limiter.limit("10/minute")
 async def chat_with_context(
+    request: Request,
     query: str = Body(...),
     selected_files: List[str] = Body(default=[]),
     context: Optional[dict] = Body(default=None)
