@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 export const MessageList = ({ messages, loading }) => {
   if (messages.length === 0 && !loading) {
@@ -28,7 +29,7 @@ const MessageItem = ({ msg }) => (
         ? 'bg-blue-600 text-white rounded-br-none' 
         : 'bg-gray-100 border border-gray-200 rounded-bl-none'
     }`}>
-      <div className="whitespace-pre-wrap">{msg.content}</div>
+      <ReactMarkdown>{msg.content}</ReactMarkdown>
       <div className={`text-xs mt-2 ${
         msg.role === 'user' ? 'text-blue-200' : 'text-gray-500'
       }`}>

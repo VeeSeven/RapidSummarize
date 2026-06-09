@@ -1,8 +1,9 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Body
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Body, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware 
 import shutil
 import os
+import boto3
 from typing import List, Optional
 
 app = FastAPI()
@@ -21,6 +22,9 @@ app.add_middleware(
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+s3 = boto3.client("s3", region_name="us-east-1")
+S3_BUCKET = os.getenv("S3_BUCKET", "rapidsummarize-uploads")
+
 from processor import extract_and_chunk_pdf 
 from rag_engine import add_to_vector_db, chat_with_pdf, delete_from_vector_db
 
@@ -30,17 +34,24 @@ async def upload_pdfs(background_tasks: BackgroundTasks, files: List[UploadFile]
     for file in files:
         if not file.filename.lower().endswith(".pdf"):
             continue
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            buffer.flush()
-            os.fsync(buffer.fileno())
         
+        contents = await file.read()
+        
+        if len(contents) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail=f"{file.filename} exceeds 10MB limit")
+        
+        s3.put_object(Bucket=S3_BUCKET, Key=f"uploads/{file.filename}", Body=contents)
+        
+        file_path = os.path.join(UPLOAD_DIR, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(contents)
+
         def process_pipeline(path):
             print(f"Background task started for {path}")
             try:
                 chunks = extract_and_chunk_pdf(path)
                 add_to_vector_db(chunks)
+                os.remove(path) 
                 print(f"Background task finished for {path}")
             except Exception as e:
                 print(f"Error in background task: {e}")
@@ -51,13 +62,14 @@ async def upload_pdfs(background_tasks: BackgroundTasks, files: List[UploadFile]
 
 @app.get("/files")
 async def list_files():
-    return {"files": os.listdir(UPLOAD_DIR)}
+    response = s3.list_objects_v2(Bucket=S3_BUCKET, Prefix="uploads/")
+    files = [obj["Key"].replace("uploads/", "") for obj in response.get("Contents", [])]
+    return {"files": files}
 
 @app.delete("/files/{filename}")
 async def delete_file(filename: str):
     file_path = os.path.join(UPLOAD_DIR, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    s3.delete_object(Bucket=S3_BUCKET, Key=f"uploads/{filename}")
     try:
         delete_from_vector_db(filename)
         return {"message": f"Deleted {filename}"}

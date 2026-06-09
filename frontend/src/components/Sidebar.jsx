@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const Sidebar = ({ 
   allFiles, 
@@ -8,6 +9,7 @@ export const Sidebar = ({
   clearChat, 
   contextFiles 
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="w-64 bg-gray-900 text-gray-300 p-4 flex flex-col">
       <div className="flex items-center justify-between mb-4">
@@ -36,7 +38,7 @@ export const Sidebar = ({
       />
       
       <button
-        onClick={() => window.location.href = '/'}
+        onClick={() => navigate('/')}
         className="w-full py-2 bg-gray-800 hover:bg-gray-700 rounded text-sm"
       >
         + Upload More

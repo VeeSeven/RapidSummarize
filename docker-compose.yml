@@ -1,23 +1,14 @@
 version: '3.8'
 
 services:
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"   
-    restart: unless-stopped
 
   backend:
     build: ./backend
     container_name: backend
-    depends_on:
-      - ollama
     environment:
-      - OLLAMA_HOST=http://ollama:11434
-      - ALLOWED_ORIGINS=http://localhost,http://localhost:80   
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80
+      - AWS_DEFAULT_REGION=us-east-1
+      - S3_BUCKET=rapidsummarize-uploads
     volumes:
       - uploads_data:/app/uploads
       - chroma_data:/app/chroma_storage
@@ -38,6 +29,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  ollama_data:
   uploads_data:
   chroma_data:
