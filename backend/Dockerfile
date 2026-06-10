@@ -14,8 +14,6 @@ COPY . .
 
 RUN mkdir -p /app/uploads /app/chroma_storage
 
-ENV OLLAMA_HOST=http://ollama:11434
-
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

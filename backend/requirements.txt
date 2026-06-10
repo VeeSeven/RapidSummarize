@@ -1,8 +1,9 @@
 fastapi
 uvicorn
-ollama
+boto3
 chromadb
 pymupdf
 pytesseract
 pillow
+slowapi
 python-multipart
