@@ -12,15 +12,31 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
+def get_embedding(text: str) -> list:
+    import time
+    for attempt in range(5):
+        try:
+            body = json.dumps({"inputText": text[:8000]})
+            response = bedrock.invoke_model(
+                modelId="amazon.titan-embed-text-v2:0",
+                body=body
+            )
+            return json.loads(response["body"].read())["embedding"]
+        except Exception as e:
+            if "ThrottlingException" in str(e):
+                wait = 2 ** attempt
+                log(f"Throttled, retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise e
+    raise Exception("Max retries exceeded for embedding")
+
 def delete_from_vector_db(filename: str):
     collection.delete(where={"file_name": filename})
 
 def chat_with_pdf(query: str, selected_files: List[str] = None, n_results: int = 5):
     try:
-        query_emb = json.loads(bedrock.invoke_model(
-            modelId="amazon.titan-embed-text-v2:0",
-            body=json.dumps({"inputText": query})
-        )["body"].read())["embedding"]
+        query_emb = get_embedding(query)
         
         search_params = {
             "query_embeddings": [query_emb],
@@ -103,11 +119,7 @@ def add_to_vector_db(chunks):
             ids.append(f"{chunk['metadata']['file_name']}_page{chunk['metadata']['page_label']}_chunk{idx}")
             
             try:
-                emb = json.loads(bedrock.invoke_model(
-                    modelId="amazon.titan-embed-text-v2:0",
-                    body=json.dumps({"inputText": content[:8000]})
-                )["body"].read())["embedding"]
-                embeddings.append(emb)
+                emb = get_embedding(content)
                 if idx % 10 == 0:
                     log(f"Processed {idx+1}/{len(chunks)} chunks")
             except Exception as e:
