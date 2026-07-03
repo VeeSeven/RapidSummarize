@@ -120,6 +120,7 @@ def add_to_vector_db(chunks):
             
             try:
                 emb = get_embedding(content)
+                embeddings.append(emb)
                 if idx % 10 == 0:
                     log(f"Processed {idx+1}/{len(chunks)} chunks")
             except Exception as e:
