@@ -123,8 +123,8 @@ def add_to_vector_db(chunks):
                 if idx % 10 == 0:
                     log(f"Processed {idx+1}/{len(chunks)} chunks")
             except Exception as e:
-                log(f"Failed to get embedding for chunk {idx}: {e}")
-                continue
+                log(f"Failed embedding for chunk {idx}: {type(e).__name__}: {e}")
+                raise e
         
         if documents:
             log(f"Adding {len(documents)} documents to ChromaDB...")
