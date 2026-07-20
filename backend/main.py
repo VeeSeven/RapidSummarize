@@ -81,7 +81,7 @@ async def list_files(session_id: str = Depends(get_session_id)):
     return {"files": files}
 @app.get("/status/{filename}")
 async def get_status(filename: str):
-    return {"status": processing_status.get(filename, "ready")}
+    return {"status": processing_status.get(filename, "unknown")}
 
 @app.delete("/files/{filename}")
 async def delete_file(filename: str, session_id: str = Depends(get_session_id)):
