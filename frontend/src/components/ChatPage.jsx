@@ -48,13 +48,17 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
         const statuses = await Promise.all(
           files.map(f => api.getStatus(f))
         );
+        console.log("Status check:", statuses.map(s => s.data.status));
         const allReady = statuses.every(s => s.data.status === "ready");
         if (allReady) {
+          console.log("All ready, sending message");
           handleSendMessage(query);
         } else {
+          console.log("Not ready yet, polling again in 2s");
           setTimeout(checkStatus, 2000);
         }
       } catch (err) {
+        console.log("Status check error:", err);
         setTimeout(checkStatus, 2000);
       }
     };
