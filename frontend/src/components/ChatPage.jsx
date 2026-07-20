@@ -51,7 +51,7 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
         console.log("Status check:", statuses.map(s => s.data.status));
         const allReady = statuses.every(s => s.data.status === "ready" || s.data.status === "error");
         const anyUnknown = statuses.some(s => s.data.status === "unknown");
-        if (allReady) {
+        if (allReady && !anyUnknown) {
           console.log("All ready, sending message");
           handleSendMessage(query);
         } else {
