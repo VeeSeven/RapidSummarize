@@ -17,7 +17,7 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
   const hasInitialQueryRun = useRef(false);
 
   useEffect(() => {
-    if (location.state?.initialQuery && !hasInitialQueryRun.current) {
+    if (location.state?.initialQuery && !hasInitialQueryRun.current && selectedFiles.length > 0) {
       hasInitialQueryRun.current = true;
       const files = location.state.uploadedFiles || [];
       if (files.length > 0) {
@@ -26,7 +26,7 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
         handleSendMessage(location.state.initialQuery);
       }
     }
-  }, [location.state]);
+  }, [location.state, selectedFiles]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,13 +42,17 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
 
   const pollUntilReady = async (files, query) => {
     const checkStatus = async () => {
-      const statuses = await Promise.all(
-        files.map(f => api.getStatus(f))
-      );
-      const allReady = statuses.every(s => s.data.status === "ready");
-      if (allReady) {
-        handleSendMessage(query);
-      } else {
+      try {
+        const statuses = await Promise.all(
+          files.map(f => api.getStatus(f))
+        );
+        const allReady = statuses.every(s => s.data.status === "ready");
+        if (allReady) {
+          handleSendMessage(query);
+        } else {
+          setTimeout(checkStatus, 2000);
+        }
+      } catch (err) {
         setTimeout(checkStatus, 2000);
       }
     };
