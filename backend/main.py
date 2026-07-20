@@ -58,11 +58,11 @@ async def upload_pdfs(request: Request, background_tasks: BackgroundTasks, files
         with open(file_path, "wb") as f:
             f.write(contents)
 
-        def process_pipeline(path, filename):
+        def process_pipeline(path, filename, sid):
             print(f"Background task started for {path}")
             try:
                 chunks = extract_and_chunk_pdf(path)
-                add_to_vector_db(chunks, session_id)
+                add_to_vector_db(chunks, sid)
                 os.remove(path)
                 processing_status[filename] = "ready"
                 print(f"Background task finished for {path}")
