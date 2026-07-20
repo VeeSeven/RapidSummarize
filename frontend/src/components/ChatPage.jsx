@@ -17,9 +17,11 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
   const hasInitialQueryRun = useRef(false);
 
   useEffect(() => {
+    console.log("Effect fired - initialQuery:", location.state?.initialQuery, "selectedFiles:", selectedFiles.length, "hasRun:", hasInitialQueryRun.current);
     if (location.state?.initialQuery && !hasInitialQueryRun.current && selectedFiles.length > 0) {
       hasInitialQueryRun.current = true;
       const files = location.state.uploadedFiles || [];
+      console.log("uploadedFiles from state:", files);
       if (files.length > 0) {
         pollUntilReady(files, location.state.initialQuery);
       } else {
