@@ -85,6 +85,7 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
           await api.streamChat(
             userQuery.trim(),
             selectedFiles,
+            sessionId,
             (chunk) => updateAssistantMessage(chunk)
           );
       }
