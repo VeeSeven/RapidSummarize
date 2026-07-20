@@ -6,7 +6,7 @@ import { Header } from './Header';
 import { MessageList } from './MessageList';
 import { InputArea } from './InputArea';
 
-export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSelectedFiles }) {
+export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSelectedFiles, sessionId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,12 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
   useEffect(() => {
     if (location.state?.initialQuery && !hasInitialQueryRun.current) {
       hasInitialQueryRun.current = true;
-      handleSendMessage(location.state.initialQuery);
+      const files = location.state.uploadedFiles || [];
+      if (files.length > 0) {
+        pollUntilReady(files, location.state.initialQuery);
+      } else {
+        handleSendMessage(location.state.initialQuery);
+      }
     }
   }, [location.state]);
 
@@ -34,6 +39,21 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
       console.log("PDF selection changed - resetting context");
     }
   }, [selectedFiles, contextFiles]);
+
+  const pollUntilReady = async (files, query) => {
+    const checkStatus = async () => {
+      const statuses = await Promise.all(
+        files.map(f => api.getStatus(f))
+      );
+      const allReady = statuses.every(s => s.data.status === "ready");
+      if (allReady) {
+        handleSendMessage(query);
+      } else {
+        setTimeout(checkStatus, 2000);
+      }
+    };
+    checkStatus();
+  };
 
   const handleSendMessage = async (userQuery) => {
     if (!userQuery.trim() || selectedFiles.length === 0 || loading) {
@@ -54,18 +74,19 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
       const lastExchange = getLastExchange(messages);
       
       if (lastExchange && contextFiles.length > 0) {
-        await api.streamChatWithContext(
-          userQuery.trim(),
-          selectedFiles,
-          lastExchange,
-          (chunk) => updateAssistantMessage(chunk)
-        );
+          await api.streamChatWithContext(
+            userQuery.trim(),
+            selectedFiles,
+            lastExchange,
+            sessionId,
+            (chunk) => updateAssistantMessage(chunk)
+          );
       } else {
-        await api.streamChat(
-          userQuery.trim(),
-          selectedFiles,
-          (chunk) => updateAssistantMessage(chunk)
-        );
+          await api.streamChat(
+            userQuery.trim(),
+            selectedFiles,
+            (chunk) => updateAssistantMessage(chunk)
+          );
       }
       
       setContextFiles([...selectedFiles]);
@@ -141,7 +162,7 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
     if (!confirm(`Delete ${fileName}?`)) return;
     
     try {
-      await api.deleteFile(fileName);
+      await api.deleteFile(fileName, sessionId);
       setAllFiles(prev => prev.filter(f => f !== fileName));
       setSelectedFiles(prev => prev.filter(f => f !== fileName));
       setContextFiles([]);

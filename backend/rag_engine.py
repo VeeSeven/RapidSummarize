@@ -31,10 +31,10 @@ def get_embedding(text: str) -> list:
                 raise e
     raise Exception("Max retries exceeded for embedding")
 
-def delete_from_vector_db(filename: str):
-    collection.delete(where={"file_name": filename})
+def delete_from_vector_db(filename: str, session_id: str = "default"):
+    collection.delete(where={"$and": [{"file_name": filename}, {"session_id": session_id}]})
 
-def chat_with_pdf(query: str, selected_files: List[str] = None, n_results: int = 5):
+def chat_with_pdf(query: str, selected_files: List[str] = None, n_results: int = 5, session_id: str = "default"):
     try:
         query_emb = get_embedding(query)
         
@@ -45,7 +45,9 @@ def chat_with_pdf(query: str, selected_files: List[str] = None, n_results: int =
         }
 
         if selected_files and len(selected_files) > 0:
-            search_params["where"] = {"file_name": {"$in": selected_files}}
+            search_params["where"] = {"$and": [{"file_name": {"$in": selected_files}}, {"session_id": session_id}]}
+        else:
+            search_params["where"] = {"session_id": session_id}
         
         results = collection.query(**search_params)
         
@@ -95,7 +97,7 @@ Instructions:
         log(f"Error in chat_with_pdf: {e}")
         yield f"Error: {str(e)}"
 
-def add_to_vector_db(chunks):
+def add_to_vector_db(chunks, session_id: str = "default"):
     try:
         if not chunks:
             log("No chunks to add to vector DB")
@@ -115,7 +117,7 @@ def add_to_vector_db(chunks):
                 continue
                 
             documents.append(content)
-            metadatas.append(chunk["metadata"])
+            metadatas.append({**chunk["metadata"], "session_id": session_id})
             ids.append(f"{chunk['metadata']['file_name']}_page{chunk['metadata']['page_label']}_chunk{idx}")
             
             try:

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 
-export default function UploadPage({ setAllFiles, setSelectedFiles }) {
+export default function UploadPage({ setAllFiles, setSelectedFiles, sessionId }) {
   const [files, setFiles] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,10 +17,10 @@ export default function UploadPage({ setAllFiles, setSelectedFiles }) {
     Array.from(files).forEach(f => formData.append("files", f));
 
     try {
-      const res = await api.uploadFiles(formData);
+      const res = await api.uploadFiles(formData, sessionId);
       setAllFiles(prev => [...new Set([...prev, ...res.data.files])]);
       setSelectedFiles(res.data.files);
-      navigate('/chat', { state: { initialQuery: query } });
+      navigate('/chat', { state: { initialQuery: query, uploadedFiles: res.data.files } });
     } catch (err) {
       alert("Upload failed");
     } finally {
