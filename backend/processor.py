@@ -5,7 +5,7 @@ import io
 import os
 import traceback
 
-def split_text_recursive(text, max_length=1500, overlap=200):   
+def split_text_recursive(text, max_length=3000, overlap=300):   
     chunks = []
     start = 0
     while start < len(text):
@@ -16,6 +16,11 @@ def split_text_recursive(text, max_length=1500, overlap=200):
     return chunks
 
 def extract_and_chunk_pdf(file_path: str):
+    doc = fitz.open(file_path)
+    if len(doc) > 100:
+        doc.close()
+        raise ValueError(f"PDF too large: {len(doc)} pages. Maximum 100 pages.")
+    
     print(f"Processing PDF: {file_path}")
     doc = None
     try:
