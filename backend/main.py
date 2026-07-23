@@ -100,7 +100,7 @@ async def chat(
     query: str = Body(...), 
     selected_files: List[str] = Body(default=[]), 
     n_results: int = Body(default=10),
-    session_id: str = Depends(get_session_id)          
+    session_id: str = Body(default="default")
 ):
     try:
         def generate():
@@ -118,7 +118,7 @@ async def chat_with_context(
     query: str = Body(...),
     selected_files: List[str] = Body(default=[]),
     context: Optional[dict] = Body(default=None),
-    session_id: str = Depends(get_session_id)
+    session_id: str = Body(default="default")
 ):
     try:
         if context and context.get("previous_query") and context.get("previous_answer"):
