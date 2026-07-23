@@ -50,6 +50,8 @@ def chat_with_pdf(query: str, selected_files: List[str] = None, n_results: int =
             search_params["where"] = {"session_id": session_id}
         
         results = collection.query(**search_params)
+        log(f"Search params where: {search_params.get('where')}")
+        log(f"Results count: {len(results['documents'][0]) if results['documents'] else 0}")
         
         context_parts = []
         if results["documents"] and len(results["documents"]) > 0 and len(results["documents"][0]) > 0:
