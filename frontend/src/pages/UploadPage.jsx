@@ -37,6 +37,7 @@ export default function UploadPage({ setAllFiles, setSelectedFiles, sessionId })
       <form onSubmit={handleUpload} className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <input type="file" multiple onChange={(e) => setFiles(e.target.files)} 
                className="block w-full text-sm text-slate-500 mb-4 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+               <p className="text-xs text-slate-400 mb-4">Max 100 pages · 10MB per file · PDF only</p>
         {files.length > 0 && (
           <p className="text-xs text-slate-500 mb-3">{files.length} file{files.length > 1 ? 's' : ''} selected</p>
         )}
