@@ -10,6 +10,7 @@ Built with a **React** frontend and **FastAPI** backend, powered by **AWS Bedroc
 
 <img width="1280" height="720" alt="rapid-aws-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/846e1910-14aa-4fa4-b21e-929ef2a18e39" />
 
+> 🚀 **Live Demo:** Available on request — [contact me](https://github.com/VeeSeven) to spin up the instance.
 
 ## ✨ Features
 
