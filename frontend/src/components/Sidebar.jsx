@@ -12,12 +12,14 @@ export const Sidebar = ({
   const navigate = useNavigate();
   return (
     <div className="w-64 bg-gray-900 text-gray-300 p-4 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-white font-bold text-lg">PDF Files</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-white font-semibold text-sm uppercase tracking-wider">Documents</h2>
+          <p className="text-gray-500 text-xs mt-0.5">{allFiles.length} uploaded</p>
+        </div>
         <button 
           onClick={clearChat}
-          className="text-xs px-2 py-1 bg-gray-800 rounded hover:bg-gray-700"
-          title="Clear chat and context"
+          className="text-xs px-3 py-1 bg-gray-800 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
         >
           Clear
         </button>
@@ -39,7 +41,7 @@ export const Sidebar = ({
       
       <button
         onClick={() => navigate('/')}
-        className="w-full py-2 bg-gray-800 hover:bg-gray-700 rounded text-sm"
+        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium text-white transition-colors"
       >
         + Upload More
       </button>

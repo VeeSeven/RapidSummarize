@@ -3,13 +3,13 @@ import ReactMarkdown from 'react-markdown';
 
 export const MessageList = ({ messages, loading }) => {
   if (messages.length === 0 && !loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-gray-300 text-6xl mb-4">📚</div>
-        <h3 className="text-xl font-semibold text-gray-700 mb-2">Start a Conversation</h3>
-        <p className="text-gray-500">Select PDFs from the sidebar and ask questions.</p>
-      </div>
-    );
+      return (
+        <div className="text-center py-20">
+          <div className="text-5xl mb-4">⚡</div>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready to summarize</h3>
+          <p className="text-sm text-gray-400">Ask anything about your selected PDFs</p>
+        </div>
+      );
   }
 
   return (

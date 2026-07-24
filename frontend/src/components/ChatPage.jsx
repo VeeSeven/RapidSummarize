@@ -17,11 +17,9 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
   const hasInitialQueryRun = useRef(false);
 
   useEffect(() => {
-    console.log("Effect fired - initialQuery:", location.state?.initialQuery, "selectedFiles:", selectedFiles.length, "hasRun:", hasInitialQueryRun.current);
     if (location.state?.initialQuery && !hasInitialQueryRun.current && selectedFiles.length > 0) {
       hasInitialQueryRun.current = true;
       const files = location.state.uploadedFiles || [];
-      console.log("uploadedFiles from state:", files);
       if (files.length > 0) {
         pollUntilReady(files, location.state.initialQuery);
       } else {
@@ -38,7 +36,6 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
     const currentFiles = JSON.stringify([...selectedFiles].sort());
     const contextFilesStr = JSON.stringify([...contextFiles].sort());
     if (contextFiles.length > 0 && currentFiles !== contextFilesStr) {
-      console.log("PDF selection changed - resetting context");
     }
   }, [selectedFiles, contextFiles]);
 
@@ -48,18 +45,14 @@ export default function ChatPage({ allFiles, setAllFiles, selectedFiles, setSele
         const statuses = await Promise.all(
           files.map(f => api.getStatus(f))
         );
-        console.log("Status check:", statuses.map(s => s.data.status));
         const allReady = statuses.every(s => s.data.status === "ready" || s.data.status === "error");
         const anyUnknown = statuses.some(s => s.data.status === "unknown");
         if (allReady && !anyUnknown) {
-          console.log("All ready, sending message");
           handleSendMessage(query);
         } else {
-          console.log("Not ready yet, polling again in 2s");
           setTimeout(checkStatus, 2000);
         }
       } catch (err) {
-        console.log("Status check error:", err);
         setTimeout(checkStatus, 2000);
       }
     };

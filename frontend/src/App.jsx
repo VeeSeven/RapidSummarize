@@ -19,7 +19,7 @@ export default function App() {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const res = await api.getFiles();
+        const res = await api.getFiles(sessionId);
         setAllFiles(res.data.files || []);
       } catch (err) {
         console.error("Failed to fetch files:", err);
