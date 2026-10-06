@@ -14,7 +14,7 @@ export const Header = ({ selectedFiles, contextFiles }) => {
       </div>
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-        <span className="text-xs text-gray-400">Powered by Llama 4</span>
+        <span className="text-xs text-gray-400">Powered by Llama 4 Scout — CI/CD tested</span>
       </div>
     </div>
   );
